@@ -1,6 +1,6 @@
 # While You Were Gone — Since 2026-03-13 20:08:26+05:30
 
-You were gone for less than a day, but a major new frontend layer was introduced. The codebase now includes a React 18.3.1 setup with a Dockerized Nginx deployment. This is a foundational shift—expect backend API adjustments for CORS and new CI/CD requirements for frontend builds.
+You were gone for less than a day, but a major new frontend layer was introduced and fully implemented. The codebase now includes a React 18.3.1 setup with a Dockerized Nginx deployment, minified production builds, and a multi-stage build pipeline. This is a foundational shift—expect backend API adjustments for CORS, new CI/CD requirements for frontend builds, and local development environment updates.
 
 ## Critical Changes (Must-Read)
 
@@ -20,6 +20,9 @@ You were gone for less than a day, but a major new frontend layer was introduced
 
 - **Frontend UI layer**
   React hooks (`useState`, `useEffect`) and JSX transforms are now available. The app is production-optimized (minified builds).
+
+- **React 18.3.1 core features**
+  Concurrent rendering, hooks, and JSX runtime transforms are now supported.
 
 ## Refactors & Structural Changes
 

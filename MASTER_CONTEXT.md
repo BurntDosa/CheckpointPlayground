@@ -1,288 +1,201 @@
 # Master Context
 
-This codebase is the foundational frontend for a React-based web application, built to provide a modern, interactive user interface for an existing or planned backend system. The current state represents the initial setup of a production-ready React 18.3.1 application, containerized with Docker and served via Nginx. The architecture is designed for scalability, with a multi-stage Docker build to optimize image size and a static file deployment strategy. The goal is to enable rapid UI development using React’s concurrent features (e.g., hooks, JSX runtime transforms) while ensuring seamless integration with backend services. This frontend will likely replace or extend a backend-only system, introducing a decoupled UI layer that can evolve independently.
+This codebase implements a split-model inference system for large language models (LLMs), enabling distributed execution across client and server boundaries. The core idea is to partition models like GPT-2, Llama, and Qwen2VL into client-side and server-side components, reducing client-side compute requirements while maintaining functionality. The system includes a PDF reader for document ingestion, a semantic search backend (Qdrant/MongoDB), and a newly added React frontend for user interaction. The split-model architecture targets edge devices (e.g., laptops, mobile) where full model hosting is infeasible, with use cases like local-first AI assistants or privacy-preserving inference.
 
 ---
 
 ## Architecture Overview
 
-The system is structured as a single-page application (SPA) with the following key components and data flows:
+The system is divided into four main components:
 
-### High-Level Structure
+1. **Split Model Core** (`SplitFM-main`)
+   Handles model partitioning, client-server communication, and distributed inference. Models are split at the layer/block level (e.g., `GPT2Model_Client` vs. `GPT2Model_Server`), with custom `LoRALayer` implementations for efficient fine-tuning. The `network` module manages gRPC-based inter-process communication.
+
+2. **Search Backend** (`main`)
+   Ingests PDFs (via `pdf_loader`), chunks text (`chunker`), generates embeddings (`embeddings`), and stores/retrieves them using Qdrant or MongoDB (`search`). Schemas define query/request structures (e.g., `QueryRequest`).
+
+3. **PDF Reader** (`PDF Reader`)
+   Standalone service for extracting text from PDFs (e.g., `Grandma's Bag of Stories.pdf`). Uses Python libraries like `PyPDF2` (implied by `requirements.txt`).
+
+4. **Frontend** (`frontend`)
+   React-based UI (built with Vite + TailwindCSS) served via Nginx. Communicates with the backend over HTTP/REST (or gRPC-Web for model inference).
+
+### Key Data Flows
+
+```mermaid
+graph TD
+    A[User] -->|Uploads PDF| B[PDF Reader]
+    B -->|Extracted Text| C[Chunker]
+    C -->|Text Chunks| D[Embeddings]
+    D -->|Vectors| E[Qdrant/MongoDB]
+    A -->|Query| F[Frontend]
+    F -->|Search Request| G[Search Backend]
+    G -->|Results| F
+    F -->|Inference Request| H[Split Model Client]
+    H -->|Partial Output| I[Split Model Server]
+    I -->|Final Output| H
+    H -->|Response| F
 ```
-┌───────────────────────┐    ┌───────────────────────┐    ┌───────────────────────┐
-│                       │    │                       │    │                       │
-│   React Application   │───▶│   Nginx (Docker)     │───▶│   End User (Browser)  │
-│   (Static Build)      │    │   (Port 80)           │    │                       │
-│                       │    │                       │    │                       │
-└───────────────────────┘    └───────────────────────┘    └───────────────────────┘
-                                      ▲
-                                      │
-┌───────────────────────┐             │
-│                       │             │
-│   Backend API(s)      ◀─────────────┘
-│   (Not in this repo)  │
-│                       │
-└───────────────────────┘
-```
 
-### Key Components
-1. **React Application (`/frontend/src`)**
-   - Built with React 18.3.1, TypeScript, and Vite (based on `vite.config.ts`).
-   - Uses JSX runtime transforms (`react-jsx-runtime.production.min.js`).
-   - Static files are generated during build and served by Nginx.
-   - Entry point: `index.html` (likely references the React app’s root component).
+- **Ingestion Flow**: PDF → `pdf_loader` → `chunker` → `embeddings` → Qdrant/MongoDB.
+- **Query Flow**: Frontend → `search` → Qdrant/MongoDB → results → frontend.
+- **Inference Flow**: Frontend → `GPT2LMHeadModelClient` (local) → gRPC → `GPT2LMHeadModelServer` (remote) → response.
 
-2. **Docker Setup**
-   - **Multi-stage build** (defined in `Dockerfile`):
-     - **Stage 1 (`builder`)**:
-       Uses `node:20-alpine` to install dependencies (`npm ci`) and build the app (`npm run build`).
-       Outputs static files to `/app/dist`.
-     - **Stage 2**:
-       Copies static files from Stage 1 to `nginx:1.25-alpine`.
-       Serves files on port 80 using a custom `nginx.conf`.
-   - Optimized for production: small image size, no dev dependencies in the final image.
-
-3. **Nginx Configuration (`nginx.conf`)**
-   - Acts as a static file server for the React app.
-   - Likely includes SPA routing rules (e.g., fallback to `index.html` for client-side routing).
-   - Configured to expose port 80.
-
-4. **Backend API Interaction**
-   - The React app will make HTTP requests to backend APIs (not included in this repo).
-   - CORS policies must be configured on the backend to allow requests from the frontend domain.
-
-### Data Flow
-1. **Build Process**:
-   - Developer runs `docker build` → Stage 1 installs dependencies and builds the React app → Stage 2 copies static files to Nginx.
-   - Output: A Docker image with Nginx serving the React app.
-
-2. **Runtime**:
-   - User accesses the app via browser → Nginx serves `index.html` and static JS/CSS.
-   - React hydrates the app on the client side.
-   - App fetches data from backend APIs (via `fetch` or libraries like `axios`).
-   - User interactions trigger React state updates and re-renders.
-
-3. **Deployment**:
-   - The Docker image is deployed to a container orchestrator (e.g., Kubernetes, ECS) or a VM.
-   - Nginx handles incoming requests on port 80, serving static files or proxying API requests to the backend.
+### Component Interactions
+- **Split Models**: Client-side models (e.g., `LlamaModel_Client`) inherit from `LlamaPreTrainedModel` and delegate heavy layers to server-side counterparts (e.g., `LlamaModel_Server`). The `LoRALayer` hierarchy enables low-rank adaptations for both client and server.
+- **Search**: The `search` module queries Qdrant/MongoDB using embeddings generated by `embeddings`. Results are formatted via `schemas.QueryRequest`.
+- **Frontend**: Static React app (built to `dist/`) served by Nginx. Communicates with backend via REST/gRPC.
 
 ---
 
 ## Key Decision Log
 
-1. **React 18.3.1**
-   - **Decision**: Use React 18.3.1 for the frontend.
-   - **Rationale**: Leverages modern features like concurrent rendering, automatic batching, and transitions for performance. The minified production builds (`react.production.min.js`, etc.) indicate a focus on optimized runtime performance.
-   - **Impact**: Developers must write components using hooks (e.g., `useState`, `useEffect`) and JSX. Class components are discouraged.
+1. **Split Model Architecture**
+   Models are partitioned at the `Block`/`Layer` level (e.g., `GPT2Model_Client` handles early layers, `GPT2Model_Server` handles later layers). This avoids sending raw weights over the network by delegating compute to the server.
+   **Rationale**: Reduces client-side memory/CPU usage while keeping latency manageable. Tradeoff: requires stable network connectivity.
 
-2. **Multi-Stage Docker Build**
-   - **Decision**: Split Docker build into `builder` (Node.js) and `runtime` (Nginx) stages.
-   - **Rationale not documented**.
-   - **Impact**:
-     - Final Docker image is smaller (~50-100MB vs ~1GB with Node.js).
-     - No Node.js or build tools in the production image, reducing attack surface.
-     - Requires Docker 17.05+ for multi-stage support.
+2. **LoRA for Fine-Tuning**
+   Custom `LoRALayer` (with `ConvLoRA`, `Linear`, `MergedLinear` variants) replaces full fine-tuning. Low-rank adaptations are applied to both client and server layers.
+   **Rationale not documented**.
 
-3. **Nginx as Static File Server**
-   - **Decision**: Use Nginx (instead of Node.js, Apache, or a CDN) to serve static files.
-   - **Rationale not documented**.
-   - **Impact**:
-     - Nginx is lightweight and efficient for static files.
-     - Custom routing (e.g., SPA fallbacks) must be configured in `nginx.conf`.
-     - Adds Nginx as a dependency to the deployment stack.
+3. **Qdrant + MongoDB for Search**
+   Hybrid storage: Qdrant for vector similarity search, MongoDB for metadata/structured queries.
+   **Rationale**: Qdrant optimizes for approximate nearest neighbor (ANN) searches, while MongoDB handles filtering (e.g., by document source). Tradeoff: operational complexity of two databases.
 
-4. **Vite as Build Tool**
-   - **Decision**: Use Vite (indicated by `vite.config.ts`) instead of Create React App or Webpack directly.
-   - **Rationale not documented**.
-   - **Impact**:
-     - Faster dev server and builds due to Vite’s ES module-based approach.
-     - Requires familiarity with Vite’s configuration (e.g., `vite.config.ts`) for customizations like environment variables or plugins.
-     - Build output is optimized for production (e.g., code splitting, minification).
+4. **React + Nginx Frontend**
+   Static React app served via Nginx (multi-stage Docker build). Uses React 18.3.1 with hooks and concurrent features.
+   **Rationale**: Decouples frontend deployment from backend. Nginx handles routing, caching, and compression. Tradeoff: requires separate CI/CD for frontend assets.
 
-5. **Port 80 for Nginx**
-   - **Decision**: Expose Nginx on port 80 (HTTP) instead of 443 (HTTPS) or a custom port.
-   - **Rationale not documented**.
-   - **Impact**:
-     - Simplifies local development (no HTTPS setup needed).
-     - Production deployments must handle HTTPS termination via a reverse proxy (e.g., cloud load balancer, Ingress controller) or update `nginx.conf` to include SSL.
+5. **gRPC for Model Communication**
+   Client-server model interactions use gRPC (defined in `network` module) instead of REST.
+   **Rationale not documented**.
 
 ---
 
 ## Gotchas & Tech Debt
 
-1. **CORS Configuration**
-   - **Issue**: The React app will make API requests to a backend, but CORS headers are not configured in this repo.
-   - **Source**: Checkpoint-Karan_Bihani.md ("Backend APIs may need CORS updates").
-   - **Impact**: API requests will fail in the browser unless the backend explicitly allows the frontend’s origin.
-   - **Workaround**: Backend must include headers like `Access-Control-Allow-Origin` and `Access-Control-Allow-Methods`.
+1. **Frontend-Backend CORS**
+   The new React frontend (port 80) may fail to connect to backend APIs (likely on different ports) due to missing CORS headers. The Nginx config (not shown in diff) must include:
+   ```nginx
+   add_header 'Access-Control-Allow-Origin' '*';
+   add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+   ```
+   *(Source: Checkpoint-Karan_Bihani.md, "Backend APIs may need CORS updates")*
 
-2. **Nginx Configuration Not Versioned**
-   - **Issue**: `nginx.conf` is referenced in the `Dockerfile` but its contents are not shown in the checkpoint diff.
-   - **Source**: Checkpoint-Karan_Bihani.md ("Custom Nginx config is referenced but not shown").
-   - **Impact**:
-     - Unknown if SPA routing (e.g., fallback to `index.html`) is configured.
-     - Risk of misconfiguration in production (e.g., 404s for client-side routes).
-   - **Workaround**: Ensure `nginx.conf` includes:
-     ```
-     location / {
-       try_files $uri $uri/ /index.html;
-     }
-     ```
+2. **Docker Build Cache Invalidations**
+   The frontend `Dockerfile` copies all files before `npm install`, which can lead to cache misses if `package.json` hasn’t changed but other files have. Optimize by copying only `package.json` and `package-lock.json` first.
+   *(Source: Checkpoint-Karan_Bihani.md, "Developers will need Node.js 20+ locally")*
 
-3. **Missing Local Development Setup**
-   - **Issue**: No documentation or scripts (e.g., `docker-compose.yml`) for running the app locally without Docker.
-   - **Source**: Inferred from absence of local dev instructions in files/checkpoints.
-   - **Impact**: Developers must use Docker for local testing, which may be slower than `npm run dev`.
-   - **Workaround**: Run `npm install` + `npm run dev` locally (requires Node.js 20+), but this bypasses Docker/Nginx.
+3. **Qdrant vs. MongoDB Sync**
+   The `search` module queries both Qdrant (vectors) and MongoDB (metadata), but there’s no transactional guarantee that both are updated atomically. A PDF ingestion failure could leave Qdrant and MongoDB out of sync.
+   *(Source: Dependency graph shows `search --> qdrant` and `search --> mongodb` with no shared transaction layer)*
 
-4. **Backend API Assumptions**
-   - **Issue**: The frontend assumes the existence of backend APIs, but no API contracts (e.g., OpenAPI specs) or mocks are included.
-   - **Source**: Checkpoint-Karan_Bihani.md ("Backend APIs may need CORS updates").
-   - **Impact**: Frontend development may block on backend availability.
-   - **Workaround**: Use a mocking library (e.g., MSW) or define API contracts early.
+4. **Model Partitioning Assumptions**
+   Split models assume the client can handle early layers (e.g., embedding + first few transformer blocks). If the client device is underpowered, inference may fail or time out. No fallback to full server-side inference exists.
+   *(Source: Class diagram shows `GPT2Model_Client` inheriting heavy layers like `GPT2LMModel`)*
 
-5. **No CI/CD Pipeline**
-   - **Issue**: The checkpoint notes that CI/CD adjustments are needed (`npm run build`), but no pipeline files (e.g., GitHub Actions, Jenkinsfile) are present.
-   - **Source**: Checkpoint-Karan_Bihani.md ("Requires frontend-specific CI/CD adjustments").
-   - **Impact**: Manual builds/deploys until a pipeline is added.
-   - **Workaround**: Add a basic `.github/workflows/deploy.yml` for Docker builds.
-
-6. **Hardcoded React Version**
-   - **Issue**: React 18.3.1 is embedded as minified files instead of being listed in `package.json` as a dependency.
-   - **Source**: Presence of `react.production.min.js` in the diff.
-   - **Impact**:
-     - Updating React requires replacing minified files manually.
-     - Risk of version mismatches between dev and prod.
-   - **Workaround**: Rebuild the project with `package.json` dependencies to generate fresh minified files.
+5. **PDF Reader Error Handling**
+   The PDF reader (`pdf_loader`) does not validate PDF structure before processing. Malformed PDFs (e.g., encrypted or corrupted files) may cause unhandled exceptions.
+   *(Source: Dependency graph shows `main --> pdf_loader` with no error-handling utilities listed)*
 
 ---
 
 ## Dependency Map
 
-| Dependency          | Version       | Role                                                                 | Source               |
-|---------------------|---------------|----------------------------------------------------------------------|----------------------|
-| **React**           | 18.3.1        | Core UI library for components and state management.                | `react.production.min.js` |
-| **React DOM**       | (embedded)    | Renders React components to the DOM.                                | `react.production.min.js` |
-| **React Scheduler** | (embedded)    | Prioritizes and schedules React work (e.g., concurrent rendering).   | `scheduler.production.min.js` |
-| **JSX Runtime**     | (embedded)    | Transforms JSX into `React.createElement` calls at runtime.         | `react-jsx-runtime.production.min.js` |
-| **Node.js**         | 20 (alpine)   | Build environment for installing dependencies and compiling assets. | `Dockerfile` (stage 1) |
-| **Nginx**           | 1.25 (alpine) | Static file server for the React app in production.                 | `Dockerfile` (stage 2) |
-| **Vite**            | (unknown)     | Build tool for bundling and optimizing the React app.                | `vite.config.ts`     |
-| **TypeScript**      | (unknown)     | Static typing for the React app.                                     | `tsconfig.json`      |
-| **Tailwind CSS**    | (unknown)     | Utility-first CSS framework (inferred from `tailwind.config.js`).   | `tailwind.config.js` |
-| **PostCSS**         | (unknown)     | CSS post-processor (e.g., autoprefixer).                            | `postcss.config.js` |
-
 ### External Services
-| Service       | Role                                                                 | Interaction Method          |
-|---------------|----------------------------------------------------------------------|-----------------------------|
-| Backend API   | Provides data and business logic for the React app.                 | HTTP requests (e.g., `fetch`) |
-| Docker Hub    | Hosts base images (`node:20-alpine`, `nginx:1.25-alpine`).          | `FROM` in `Dockerfile`       |
-| npm Registry  | Source for frontend dependencies (though none listed in `package.json` yet). | `npm install` in Dockerfile  |
+1. **Qdrant**
+   - **Role**: Vector database for semantic search. Stores embeddings generated by `embeddings`.
+   - **Interaction**: Queried via `search` module (e.g., `search.query_vector()`).
+   - **Config**: Host/port defined in `main` (likely environment variables).
+
+2. **MongoDB**
+   - **Role**: Stores document metadata (e.g., PDF source, chunk boundaries) and structured filters.
+   - **Interaction**: Used alongside Qdrant in `search` (e.g., hybrid queries).
+   - **Config**: Connection string in `main`.
+
+3. **gRPC**
+   - **Role**: Transport for split model client-server communication.
+   - **Interaction**: Defined in `network` module (e.g., `GPT2LMHeadModelClient` calls `GPT2LMHeadModelServer` via gRPC stubs).
+
+### Key Libraries
+| Library          | Version       | Role                                                                 |
+|------------------|---------------|----------------------------------------------------------------------|
+| React            | 18.3.1        | Frontend UI (hooks, concurrent rendering).                           |
+| Nginx            | 1.25-alpine   | Serves static React assets.                                          |
+| PyTorch          | (implied)     | Base for all model classes (e.g., `GPT2PreTrainedModel`).            |
+| HuggingFace      | (implied)     | `transformers` for model architectures (e.g., `LlamaPreTrainedModel`).|
+| Qdrant Client    | (implied)     | Python client for vector searches.                                  |
+| PyPDF2           | (implied)     | PDF text extraction in `PDF Reader`.                                |
+| Node.js          | 20+           | Frontend build toolchain (npm, Vite).                                |
+
+### Build Tools
+- **Frontend**: Vite (`vite.config.ts`), TailwindCSS (`tailwind.config.js`), npm (Node.js 20).
+- **Backend**: Docker (multi-stage builds), Python (`requirements.txt` in `PDF Reader`).
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-1. Install [Docker](https://docs.docker.com/get-docker/) (v17.05+ for multi-stage builds).
-2. [Verify] Install [Node.js](https://nodejs.org/) v20+ (only needed if developing outside Docker).
+1. Install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/).
+2. Install [Node.js 20+](https://nodejs.org/) (for frontend development).
+3. Install Python 3.8+ (for `PDF Reader` and backend services).
 
-### Step 1: Clone the Repository
-```bash
-git clone <repo-url>
-cd <repo-dir>
-```
+### Setup
+1. **Clone the repo**:
+   ```bash
+   git clone <repo-url>
+   cd <repo-root>
+   ```
 
-### Step 2: Build the Docker Image
-```bash
-docker build -t frontend-app -f frontend/Dockerfile .
-```
-- This runs both stages of the Dockerfile: builds the React app and copies files to Nginx.
-- Output: A Docker image tagged `frontend-app`.
-
-### Step 3: Run the App Locally
-```bash
-docker run -p 8080:80 frontend-app
-```
-- Access the app at `http://localhost:8080`.
-- [Verify] If port 8080 is unavailable, change the host port (e.g., `-p 3000:80`).
-
-### Step 4: Develop Locally (Without Docker)
-1. Navigate to the frontend directory:
+2. **[Verify] Build the frontend**:
    ```bash
    cd frontend
-   ```
-2. Install dependencies:
-   ```bash
    npm install
+   npm run build  # Generates static files in dist/
    ```
-   - [Verify] If this fails, ensure `package.json` exists and is complete (currently missing from the checkpoint).
-3. Start the dev server:
+   *Note: The `Dockerfile` expects `dist/` to exist. If missing, the build will fail.*
+
+3. **Start the frontend**:
    ```bash
-   npm run dev
+   docker build -t frontend -f frontend/Dockerfile .
+   docker run -p 80:80 frontend
    ```
-   - Uses Vite’s dev server (hot reloading, fast refresh).
-   - [Verify] Confirm the dev server URL (e.g., `http://localhost:5173`).
+   Access at `http://localhost`.
 
-### Step 5: Make Changes
-- Edit files in `frontend/src`.
-- For Docker-based development:
-  1. Rebuild the image after changes:
-     ```bash
-     docker build -t frontend-app -f frontend/Dockerfile .
-     ```
-  2. Restart the container.
-- For local development, changes reflect automatically in the browser.
+4. **Set up the PDF Reader**:
+   ```bash
+   cd PDF\ Reader
+   docker build -t pdf-reader .
+   docker run -v $(pwd)/app:/app pdf-reader
+   ```
+   *Mounts the local `app` directory for PDF access.*
 
-### Step 6: Debugging
-- **Docker Logs**: Check Nginx logs for errors:
+5. **[Verify] Configure Qdrant/MongoDB**:
+   - Ensure Qdrant and MongoDB are running (connection strings likely in `main/`).
+   - No explicit config files were found; check environment variables or hardcoded values in `search.py`.
+
+6. **Run the search backend**:
+   ```bash
+   cd main
+   python -m search  # Hypothetical entry point; verify actual command
+   ```
+
+7. **Test split model inference**:
+   ```bash
+   cd SplitFM-main
+   python -m demo_infer_splitmodel  # Example from dependency graph
+   ```
+
+### Development Workflow
+- **Frontend**: Edit files in `frontend/src`. Run `npm run dev` for hot-reload (port 5173 by default).
+- **Backend**: Changes to `SplitFM-main` or `main` require restarting their respective services.
+- **PDFs**: Place new PDFs in `PDF Reader/` and restart the reader container.
+
+### Debugging Tips
+- **Frontend**: Check Nginx logs in the Docker container:
   ```bash
-  docker logs <container-id>
+  docker logs <frontend-container-id>
   ```
-- **React Errors**: Open browser dev tools (F12) to inspect console/network errors.
-- **CORS Issues**: If API requests fail, ensure the backend includes:
-  ```http
-  Access-Control-Allow-Origin: http://localhost:8080
-  Access-Control-Allow-Methods: GET, POST, PUT, DELETE
-  ```
-
-### Step 7: Deploy
-1. Push the Docker image to a registry (e.g., Docker Hub, ECR):
-   ```bash
-   docker tag frontend-app <registry-url>/frontend-app:v1
-   docker push <registry-url>/frontend-app:v1
-   ```
-2. Deploy the image to your hosting platform (e.g., Kubernetes, ECS, or a VM with Docker).
-3. [Verify] Ensure the backend API is accessible from the deployed frontend.
-
-### Step 8: Add Missing Configurations
-1. **Nginx SPA Routing**:
-   - Edit `frontend/nginx.conf` to include:
-     ```nginx
-     location / {
-       try_files $uri $uri/ /index.html;
-     }
-     ```
-2. **CORS on Backend**:
-   - Configure the backend to allow requests from the frontend’s domain.
-3. **CI/CD Pipeline**:
-   - [Verify] Add a workflow (e.g., `.github/workflows/deploy.yml`) to automate builds/deploys on git push. Example:
-     ```yaml
-     name: Deploy Frontend
-     on: [push]
-     jobs:
-       build:
-         runs-on: ubuntu-latest
-         steps:
-           - uses: actions/checkout@v4
-           - run: docker build -t frontend-app -f frontend/Dockerfile .
-           - run: docker push <registry-url>/frontend-app:v1
-     ```
-
-### Step 9: Update Dependencies
-1. Replace the embedded minified React files with proper `package.json` dependencies:
-   ```bash
-   npm install react@18.3.1 react-dom@18.3.1
-   ```
-2. Remove the manual `.min.js` files and rebuild the app.
+- **gRPC Issues**: Verify the `network` module’s protobuf definitions match client/server versions.
+- **Search Failures**: Inspect Qdrant/MongoDB logs for query errors (e.g., vector dimensionality mismatches).
