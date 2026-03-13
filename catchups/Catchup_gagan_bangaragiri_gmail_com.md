@@ -2,6 +2,8 @@
 
 You were gone for less than a day, but three major new components were introduced: a **React 18.3.1 frontend layer**, the **SplitFM framework** for privacy-preserving, resource-efficient fine-tuning and inference, and a **PDF Reader with LLM** service for semantic search over PDFs. The codebase now includes a Dockerized Nginx deployment for the frontend, a new `.gitignore` setup for PyTorch model files, and a FastAPI service with MongoDB/Qdrant integration. Expect backend API adjustments for CORS, new CI/CD requirements for frontend builds, potential dependency conflicts between SplitLoRA (PyTorch 1.7.1) and SplitInfer (PyTorch 2.4.1), and a new semantic search pipeline for PDFs.
 
+A **dashboard automation** folder was also added as early scaffolding for clinical data visualization, and a submodule was removed, which may break builds depending on it.
+
 ## Critical Changes (Must-Read)
 
 1. **React 18.3.1 frontend added**
@@ -21,6 +23,7 @@ You were gone for less than a day, but three major new components were introduce
    - **Breaking changes**: Replace `nn.Linear`/`nn.Embedding` with `loralib.Linear` and use `lora_state_dict` for checkpoints.
    - **Dependency conflicts**: SplitLoRA requires PyTorch 1.7.1, while SplitInfer requires PyTorch 2.4.1.
    - **New training flags**: `--lora_dim`, `--train_batch_size`, and split data paths (`--train_data0`, `--train_data1`).
+   - **Update:** Supported models now include DeepSeek-R1, Qwen2-VL, Llama3, and GPT-2.
 
 5. **PDF Reader with LLM service added**
    A FastAPI service for uploading PDFs, chunking text, indexing embeddings in Qdrant, and semantic search. Key components:
@@ -28,9 +31,13 @@ You were gone for less than a day, but three major new components were introduce
    - **Endpoints**: `/upload-pdf` (ingests PDFs) and `/query` (semantic search).
    - **Embeddings**: Uses `all-MiniLM-L6-v2` (384-dim vectors) for semantic search.
    - **Chunking**: Splits text into 500-token chunks with 50-token overlap.
+   - **Update:** No LLM integration yet—retrieves chunks but doesn’t generate answers.
 
 6. **Submodule removed**
    The submodule at commit `5da7a2ecce4e20501f53adf5797ac70a2be3a0f4` was detached. Builds depending on it may break.
+
+7. **Dashboard automation scaffolding**
+   A new `dashboard_auto/` folder was added with placeholder files (`clinical_dashboard.html`, `dashboard_data.json`, `prepare_dashboard.bat`). No functional changes yet, but future commits may introduce data visualization logic.
 
 ## New Features & Additions
 
@@ -49,16 +56,24 @@ You were gone for less than a day, but three major new components were introduce
   - Query indexed content via `/query` for top-5 semantic matches.
   - Sample PDF (`Grandma's Bag of Stories.pdf`) included for testing.
 
+- **Dashboard automation**
+  Early-stage files for a clinical data dashboard:
+  - `clinical_dashboard.html`: Basic HTML skeleton.
+  - `dashboard_data.json`: Sample JSON data.
+  - `prepare_dashboard.bat`: Placeholder batch script.
+
 ## Refactors & Structural Changes
 
 - **New directory structure (implied)**
   The Dockerfile copies files from `/app/build` (standard React output). Expect a `src/` directory and `package.json` in the repo.
   **Update:** The `README.md` documents additional directories for SplitFM: `src/`, `eval/`, `data/`, and `vocab/`.
   **Update:** New directories for PDF Reader: `app/`, `app/database/`, `app/services/`, `app/models/`.
+  **Update:** New directories for dashboard automation: `dashboard_auto/`.
 
 - **PyTorch model file handling**
   `.gitignore` now excludes `*.pth` and `*.pt` files, along with Python cache (`__pycache__`).
   **Update:** `.DS_Store` (macOS metadata) is also now ignored.
+  **Update:** `.DS_Store` files were accidentally committed across multiple directories (`SplitFM-main/`, `frontend/`, `src/`). These should be purged.
 
 - **SplitFM source files (documented but not yet committed)**
   The `README.md` references three new files:

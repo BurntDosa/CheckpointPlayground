@@ -3,6 +3,7 @@
 The project now includes **two parallel efforts**:
 1. **SplitFM**: A framework merging SplitLoRA (parameter-efficient fine-tuning) and SplitInfer (split inference) for large foundation models. This is the initial commit—no source code yet, but the README outlines breaking changes to model definitions, training loops, and inference workflows. You’ll need to adapt to new dependencies, hyperparameters, and split model architectures.
 2. **PDF Reader with LLM**: A FastAPI service for uploading PDFs, chunking text, indexing embeddings in Qdrant, and enabling semantic search. Uses MongoDB for metadata storage and `all-MiniLM-L6-v2` for embeddings.
+3. **Dashboard Auto**: Early-stage scaffolding for an automated clinical data visualization dashboard. No functional code yet.
 
 ## Critical Changes (Must-Read)
 
@@ -34,6 +35,9 @@ The project now includes **two parallel efforts**:
    - **`/query`**: Returns top-5 semantic matches for a query.
    **Security Note**: No auth/rate-limiting is implemented.
 
+8. **Dashboard Auto Scaffolding**
+   A new `dashboard_auto/` directory was added with placeholder files (`clinical_dashboard.html`, `dashboard_data.json`, `prepare_dashboard.bat`). No functional code yet, but future commits may introduce automated clinical data visualization.
+
 ## New Features & Additions
 
 **SplitInfer Module**
@@ -60,6 +64,7 @@ The project now includes **two parallel efforts**:
   - `eval/`: Benchmarking scripts (referenced but not added).
   - `data/`: Expected to hold split training data (e.g., `train_data0.json`, `train_data1.json`).
   - `vocab/`: Model tokenizers (e.g., `gpt2_vocab/`).
+  - `dashboard_auto/`: Placeholder files for automated clinical dashboard.
 - **Implication**: Update all relative paths in scripts/configs to match this structure.
 
 **Model Definition Splits**
@@ -75,6 +80,12 @@ The project now includes **two parallel efforts**:
   - `embeddings.py`: Vector generation.
   - `search.py`: MongoDB/Qdrant indexing and querying.
 - **`app/database/`**: Isolated DB clients for MongoDB and Qdrant.
+
+**Dashboard Auto Structure**
+- **`dashboard_auto/`**: New directory with:
+  - `clinical_dashboard.html`: Basic HTML skeleton.
+  - `dashboard_data.json`: Sample JSON data.
+  - `prepare_dashboard.bat`: Batch script calling `prepare_dashboard.py` (not yet committed).
 
 ## New Dependencies & Config Changes
 

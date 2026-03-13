@@ -1,6 +1,6 @@
 # While You Were Gone — Since 2026-03-13 22:07:08+05:30
 
-You missed a major shift: the repo now has **two new foundational systems**—a React 18.3.1 frontend and a FastAPI-based PDF Reader with LLM embeddings. The frontend introduces a Dockerized Nginx pipeline, while the backend adds MongoDB, Qdrant, and semantic search. A noise commit (`hehe`) and `.DS_Store` additions can be ignored.
+You missed a major shift: the repo now has **three new foundational systems**—a React 18.3.1 frontend, a FastAPI-based PDF Reader with LLM embeddings, and a clinical dashboard scaffolding. The frontend introduces a Dockerized Nginx pipeline, while the backend adds MongoDB, Qdrant, and semantic search. A noise commit (`hehe`) and `.DS_Store` additions can be ignored.
 
 ## Critical Changes (Must-Read)
 
@@ -41,6 +41,13 @@ You missed a major shift: the repo now has **two new foundational systems**—a 
 6. **Submodule removed**
    The submodule at commit `5da7a2ecce4e20501f53adf5797ac70a2be3a0f4` was detached. **Action**: Check if your local build or CI/CD references this submodule—updates are needed to avoid breaks.
 
+7. **Clinical dashboard scaffolding added**
+   A new `dashboard_auto/` directory was introduced with placeholder files for a clinical data visualization system:
+   - `clinical_dashboard.html`: Basic HTML skeleton.
+   - `dashboard_data.json`: Sample JSON data.
+   - `prepare_dashboard.bat`: Batch script calling a missing `prepare_dashboard.py`.
+   - **Action**: Monitor for follow-up commits to assess integration needs.
+
 ## New Features & Additions
 
 - **React 18.3.1 with concurrent rendering support**
@@ -59,6 +66,12 @@ You missed a major shift: the repo now has **two new foundational systems**—a 
 
 - **Nginx as static file server**
   The Dockerfile’s second stage uses Nginx to serve the React app. Expect this to replace or proxy existing backend-served UI templates. The exact routing rules aren’t visible yet, but assume `/` and SPA-style paths (e.g., `/dashboard`) will hit the frontend.
+
+- **Clinical dashboard foundation**
+  Early-stage files in `dashboard_auto/` suggest a future feature for automated clinical data visualization. Key files:
+  - `clinical_dashboard.html`: Placeholder HTML.
+  - `prepare_dashboard.bat`: Script to preprocess data (calls missing `prepare_dashboard.py`).
+  - **Note**: This is likely a work-in-progress; no functional integration yet.
 
 ## Refactors & Structural Changes
 

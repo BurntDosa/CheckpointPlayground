@@ -1,6 +1,6 @@
-# While You Were Gone — Since 2026-03-13 22:21:58+05:30
+# While You Were Gone — Since 2026-03-13 22:21:58+05:30 to 2026-03-13 22:50:53+05:30
 
-You missed the initial commit for **SplitFM**, a new framework combining SplitLoRA (parameter-efficient fine-tuning) and SplitInfer (split inference) for foundation models. This introduces a full privacy-preserving, edge-optimized workflow for models like GPT-2, Llama3, and Qwen2-VL. You also missed the initial setup for a React 18.3.1 frontend served via Nginx, which adds a UI layer to the stack. Expect backend API adjustments (CORS, routing) and CI/CD updates to follow.
+You missed the initial commit for **SplitFM**, a new framework combining SplitLoRA (parameter-efficient fine-tuning) and SplitInfer (split inference) for foundation models. This introduces a full privacy-preserving, edge-optimized workflow for models like GPT-2, Llama3, and Qwen2-VL. You also missed the initial setup for a React 18.3.1 frontend served via Nginx, which adds a UI layer to the stack. Expect backend API adjustments (CORS, routing) and CI/CD updates to follow. Additionally, a new automated dashboard system for clinical data visualization was introduced, though it remains in early-stage scaffolding.
 
 ## Critical Changes (Must-Read)
 
@@ -23,6 +23,13 @@ You missed the initial commit for **SplitFM**, a new framework combining SplitLo
 5. **New build step required**
    The Dockerfile assumes a `build` stage (e.g., `npm run build`). CI/CD pipelines need updates to include this before deploying the Nginx image.
 
+6. **Automated dashboard scaffolding added**
+   A new `dashboard_auto/` folder was introduced with placeholder files for a clinical data visualization system. This includes:
+   - `clinical_dashboard.html` (basic HTML skeleton)
+   - `dashboard_data.json` (sample JSON data)
+   - `prepare_dashboard.bat` (batch script calling a non-existent `prepare_dashboard.py`).
+   No existing code is modified, but future commits will likely expand this feature.
+
 ## New Features & Additions
 
 - **SplitFM framework**
@@ -39,13 +46,18 @@ You missed the initial commit for **SplitFM**, a new framework combining SplitLo
   - Final stage: Copies static files to `nginx:1.25-alpine` for serving.
   This replaces any prior manual frontend deployment steps.
 
+- **Automated dashboard system**
+  Early-stage scaffolding for a clinical data dashboard:
+  - **`dashboard_auto/`**: Contains placeholder files for HTML, JSON data, and a batch script.
+  - **Purpose**: Likely to replace manual dashboard generation, but no functional code exists yet.
+
 ## Refactors & Structural Changes
 
 - **Submodule removal**
   The submodule at commit `5da7a2ecce4e20501f53adf5797ac70a2be3a0f4` was detached. **Update:** This may be related to the SplitFM introduction, but no explicit migration path was provided.
 
 - **Directory structure updates**
-  New directories added for SplitFM (`SplitFM-main/`, `SplitFM-main/SplitLoRA/`, `SplitFM-main/SplitInfer/`) and frontend (`frontend/`, `frontend/src/`).
+  New directories added for SplitFM (`SplitFM-main/`, `SplitFM-main/SplitLoRA/`, `SplitFM-main/SplitInfer/`), frontend (`frontend/`, `frontend/src/`), and the automated dashboard (`dashboard_auto/`).
 
 ## New Dependencies & Config Changes
 
@@ -67,3 +79,6 @@ You missed the initial commit for **SplitFM**, a new framework combining SplitLo
 
 - **New `.gitignore` rules**
   Added exclusions for PyTorch model files (`*.pth`, `*.pt`) and Python cache (`__pycache__`).
+
+- **Unintended `.DS_Store` files**
+  macOS metadata files were accidentally added to multiple directories (`SplitFM-main/`, `frontend/`, `src/`). These should be purged and added to `.gitignore`.
