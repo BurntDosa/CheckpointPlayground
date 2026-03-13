@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+pymongo
+qdrant-client==1.8.2
+pypdf
+numpy==1.26.4
+sentence-transformers
+nltk
+requests

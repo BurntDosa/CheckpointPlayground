@@ -1,0 +1,7 @@
+Sentence-based chunking: Preserves semantic meaning within text chunks
+Batch embeddings: Reduces embedding computation overhead
+Metadata filtering: Restricts retrieval to relevant document only
+Re-ranking: Improves ordering of most relevant chunks
+Local RAG summarization: Generates direct answers from retrieved content
+Highlight exact sentences used: Shows precise text supporting generated answers
+Confidence-weighted highlighting: Relevance of each highlighted sentence
