@@ -1,6 +1,6 @@
-# While You Were Gone — Since 2026-03-13 22:21:58+05:30 to 2026-03-13 22:50:53+05:30
+# While You Were Gone — Since 2026-03-13 22:21:58+05:30 to 2026-03-13 23:30:00+05:30
 
-You missed the initial commit for **SplitFM**, a new framework combining SplitLoRA (parameter-efficient fine-tuning) and SplitInfer (split inference) for foundation models. This introduces a full privacy-preserving, edge-optimized workflow for models like GPT-2, Llama3, and Qwen2-VL. You also missed the initial setup for a React 18.3.1 frontend served via Nginx, which adds a UI layer to the stack. Expect backend API adjustments (CORS, routing) and CI/CD updates to follow. Additionally, a new automated dashboard system for clinical data visualization was introduced, though it remains in early-stage scaffolding.
+You missed the initial commit for **SplitFM**, a new framework combining SplitLoRA (parameter-efficient fine-tuning) and SplitInfer (split inference) for foundation models. This introduces a full privacy-preserving, edge-optimized workflow for models like GPT-2, Llama3, and Qwen2-VL. You also missed the initial setup for a React 18.3.1 frontend served via Nginx, which adds a UI layer to the stack. Expect backend API adjustments (CORS, routing) and CI/CD updates to follow. Additionally, a new automated dashboard system for clinical data visualization was introduced, though it remains in early-stage scaffolding. A **VS Code extension for Gemini AI pair-programming** was also added, introducing two new commands for chat and code generation.
 
 ## Critical Changes (Must-Read)
 
@@ -30,6 +30,13 @@ You missed the initial commit for **SplitFM**, a new framework combining SplitLo
    - `prepare_dashboard.bat` (batch script calling a non-existent `prepare_dashboard.py`).
    No existing code is modified, but future commits will likely expand this feature.
 
+7. **VS Code Gemini AI extension added**
+   A new extension for Gemini AI pair-programming introduces two commands:
+   - `gemini.chat`: Opens an input box, sends prompts to the Gemini API, and displays responses in an output channel.
+   - `gemini.code`: Inserts generated code directly into the active editor.
+   - **Requires configuration**: Users must set `geminiPair.apiKey` in VS Code settings.
+   - **Debugging**: Uses a new `launch.json` configuration for development.
+
 ## New Features & Additions
 
 - **SplitFM framework**
@@ -51,13 +58,18 @@ You missed the initial commit for **SplitFM**, a new framework combining SplitLo
   - **`dashboard_auto/`**: Contains placeholder files for HTML, JSON data, and a batch script.
   - **Purpose**: Likely to replace manual dashboard generation, but no functional code exists yet.
 
+- **VS Code Gemini AI extension**
+  - **Commands**: `gemini.chat` and `gemini.code` for AI-assisted development.
+  - **API integration**: Uses Node.js `https` to call the Gemini API with user-provided keys.
+  - **Code insertion**: Automatically strips markdown formatting before inserting code into the editor.
+
 ## Refactors & Structural Changes
 
 - **Submodule removal**
   The submodule at commit `5da7a2ecce4e20501f53adf5797ac70a2be3a0f4` was detached. **Update:** This may be related to the SplitFM introduction, but no explicit migration path was provided.
 
 - **Directory structure updates**
-  New directories added for SplitFM (`SplitFM-main/`, `SplitFM-main/SplitLoRA/`, `SplitFM-main/SplitInfer/`), frontend (`frontend/`, `frontend/src/`), and the automated dashboard (`dashboard_auto/`).
+  New directories added for SplitFM (`SplitFM-main/`, `SplitFM-main/SplitLoRA/`, `SplitFM-main/SplitInfer/`), frontend (`frontend/`, `frontend/src/`), the automated dashboard (`dashboard_auto/`), and VS Code extension (`.vscode/`).
 
 ## New Dependencies & Config Changes
 
@@ -82,3 +94,7 @@ You missed the initial commit for **SplitFM**, a new framework combining SplitLo
 
 - **Unintended `.DS_Store` files**
   macOS metadata files were accidentally added to multiple directories (`SplitFM-main/`, `frontend/`, `src/`). These should be purged and added to `.gitignore`.
+
+- **VS Code extension dependencies**
+  - Requires `geminiPair.apiKey` and `geminiPair.model` settings in VS Code.
+  - Uses Node.js `https` module for API calls.

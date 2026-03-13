@@ -1,9 +1,10 @@
 # While You Were Gone — Since 2026-03-13 20:38:27+05:30
 
-The project now includes **two parallel efforts**:
-1. **SplitFM**: A framework merging SplitLoRA (parameter-efficient fine-tuning) and SplitInfer (split inference) for large foundation models. This is the initial commit—no source code yet, but the README outlines breaking changes to model definitions, training loops, and inference workflows. You’ll need to adapt to new dependencies, hyperparameters, and split model architectures.
-2. **PDF Reader with LLM**: A FastAPI service for uploading PDFs, chunking text, indexing embeddings in Qdrant, and enabling semantic search. Uses MongoDB for metadata storage and `all-MiniLM-L6-v2` for embeddings.
-3. **Dashboard Auto**: Early-stage scaffolding for an automated clinical data visualization dashboard. No functional code yet.
+The project now includes **three parallel efforts**:
+1. **SplitFM**: A framework merging SplitLoRA (parameter-efficient fine-tuning) and SplitInfer (split inference) for large foundation models. Initial commit includes documentation, `.gitignore` rules, and framework overview. No source code yet, but the README outlines breaking changes to model definitions, training loops, and inference workflows.
+2. **PDF Reader with LLM**: A FastAPI service for uploading PDFs, chunking text, indexing embeddings in Qdrant, and enabling semantic search. Uses MongoDB for metadata storage and `all-MiniLM-L6-v2` for embeddings. **Update:** The service is now fully implemented with Docker support, database integrations, and core logic for text extraction, chunking, and semantic search.
+3. **Dashboard Auto**: Early-stage scaffolding for an automated clinical data visualization dashboard. No functional code yet, but placeholder files and a README were added.
+4. **Gemini Pair Programmer**: A new VS Code extension for Gemini AI integration, enabling pair-programming assistance via two commands: `gemini.chat` (prompt/response in output channel) and `gemini.code` (direct code insertion into the editor).
 
 ## Critical Changes (Must-Read)
 
@@ -33,10 +34,19 @@ The project now includes **two parallel efforts**:
    The PDF Reader with LLM introduces a FastAPI service on port `8000` with:
    - **`/upload-pdf`**: Accepts PDF uploads, extracts text, chunks it, and indexes chunks in MongoDB/Qdrant.
    - **`/query`**: Returns top-5 semantic matches for a query.
+   **Update:** The service now includes Docker support, database integrations, and core logic for text extraction, chunking, and semantic search.
    **Security Note**: No auth/rate-limiting is implemented.
 
 8. **Dashboard Auto Scaffolding**
    A new `dashboard_auto/` directory was added with placeholder files (`clinical_dashboard.html`, `dashboard_data.json`, `prepare_dashboard.bat`). No functional code yet, but future commits may introduce automated clinical data visualization.
+
+9. **Gemini Pair Programmer Extension**
+   A new VS Code extension for Gemini AI integration:
+   - **Commands**:
+     - `gemini.chat`: Opens an input box, sends prompts to the Gemini API, and displays responses in the output channel.
+     - `gemini.code`: Inserts generated code directly into the active editor.
+   - **Configuration**: Requires `geminiPair.apiKey` and `geminiPair.model` settings in VS Code.
+   - **Debugging**: Uses a new `launch.json` configuration for extension development.
 
 ## New Features & Additions
 
@@ -55,6 +65,16 @@ The project now includes **two parallel efforts**:
 - **Embedding Model**: Uses `all-MiniLM-L6-v2` for 384-dim embeddings.
 - **Chunking Logic**: Splits text into 500-token chunks with 50-token overlap.
 - **Semantic Search**: Queries Qdrant for top-k matches, hydrates results with chunk text from MongoDB.
+- **API Endpoints**:
+  - **`/upload-pdf`**: Processes PDFs, extracts text, and indexes chunks.
+  - **`/query`**: Returns semantic search results for a query.
+
+**Gemini Pair Programmer**
+- **VS Code Commands**:
+  - `gemini.chat`: Prompts the Gemini API and displays responses in the output channel.
+  - `gemini.code`: Inserts generated code into the active editor.
+- **API Integration**: Uses Node.js `https` for API calls, with markdown cleanup for code insertion.
+- **Configuration**: Requires `geminiPair.apiKey` and `geminiPair.model` settings in VS Code.
 
 ## Refactors & Structural Changes
 
@@ -65,6 +85,7 @@ The project now includes **two parallel efforts**:
   - `data/`: Expected to hold split training data (e.g., `train_data0.json`, `train_data1.json`).
   - `vocab/`: Model tokenizers (e.g., `gpt2_vocab/`).
   - `dashboard_auto/`: Placeholder files for automated clinical dashboard.
+  - **Update:** `SplitFM-main/`, `SplitFM-main/SplitInfer/`, `SplitFM-main/SplitLoRA/`, `frontend/`, `frontend/src/`: New directories added, each containing `.DS_Store` files.
 - **Implication**: Update all relative paths in scripts/configs to match this structure.
 
 **Model Definition Splits**
@@ -80,12 +101,20 @@ The project now includes **two parallel efforts**:
   - `embeddings.py`: Vector generation.
   - `search.py`: MongoDB/Qdrant indexing and querying.
 - **`app/database/`**: Isolated DB clients for MongoDB and Qdrant.
+- **`app/models/schemas.py`**: Defines Pydantic models for API requests (e.g., `QueryRequest`).
 
 **Dashboard Auto Structure**
 - **`dashboard_auto/`**: New directory with:
   - `clinical_dashboard.html`: Basic HTML skeleton.
   - `dashboard_data.json`: Sample JSON data.
   - `prepare_dashboard.bat`: Batch script calling `prepare_dashboard.py` (not yet committed).
+  - `README.md`: Single-line description of the folder.
+  - `purpose.txt`: Explanation of the folder's purpose.
+
+**Gemini Pair Programmer Structure**
+- **`.vscode/launch.json`**: Debug configuration for extension development.
+- **`extension.js`**: Core logic for `gemini.chat` and `gemini.code` commands, including API calls and code insertion.
+- **`package.json`**: Extension metadata, activation events, and command definitions.
 
 ## New Dependencies & Config Changes
 
@@ -112,3 +141,9 @@ The project now includes **two parallel efforts**:
 - **New Packages**:
   - `fastapi`, `uvicorn`, `pymongo`, `qdrant-client==1.8.2`, `sentence-transformers`, `pypdf`.
 - **Environment Variables**: None required (hardcoded DB hosts: `mongodb://mongodb:27017`, `qdrant:6333`).
+
+**Gemini Pair Programmer Dependencies**
+- **VS Code Settings**:
+  - `geminiPair.apiKey`: Required for API access.
+  - `geminiPair.model`: Specifies the Gemini model to use.
+- **Node.js**: Uses the `https` module for API calls.

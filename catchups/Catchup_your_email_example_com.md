@@ -1,6 +1,6 @@
 # While You Were Gone — Since 2026-03-13 22:07:08+05:30
 
-You missed a major shift: the repo now has **three new foundational systems**—a React 18.3.1 frontend, a FastAPI-based PDF Reader with LLM embeddings, and a clinical dashboard scaffolding. The frontend introduces a Dockerized Nginx pipeline, while the backend adds MongoDB, Qdrant, and semantic search. A noise commit (`hehe`) and `.DS_Store` additions can be ignored.
+You missed a major shift: the repo now has **four new foundational systems**—a React 18.3.1 frontend, a FastAPI-based PDF Reader with LLM embeddings, a clinical dashboard scaffolding, and a VS Code extension for Gemini AI pair programming. The frontend introduces a Dockerized Nginx pipeline, while the backend adds MongoDB, Qdrant, and semantic search. A noise commit (`hehe`) and `.DS_Store` additions can be ignored.
 
 ## Critical Changes (Must-Read)
 
@@ -46,7 +46,15 @@ You missed a major shift: the repo now has **three new foundational systems**—
    - `clinical_dashboard.html`: Basic HTML skeleton.
    - `dashboard_data.json`: Sample JSON data.
    - `prepare_dashboard.bat`: Batch script calling a missing `prepare_dashboard.py`.
+   - **Update**: Now includes `README.md` and `purpose.txt` for documentation.
    - **Action**: Monitor for follow-up commits to assess integration needs.
+
+8. **VS Code extension for Gemini AI pair programming added**
+   A new VS Code extension (`extension.js`, `package.json`) introduces two commands:
+   - `gemini.chat`: Sends prompts to the Gemini API and displays responses in the output channel.
+   - `gemini.code`: Inserts generated code directly into the active editor.
+   - **Dependencies**: Requires `geminiPair.apiKey` and `geminiPair.model` settings in VS Code.
+   - **Action**: Configure your Gemini API key in VS Code settings to use these commands.
 
 ## New Features & Additions
 
@@ -71,7 +79,15 @@ You missed a major shift: the repo now has **three new foundational systems**—
   Early-stage files in `dashboard_auto/` suggest a future feature for automated clinical data visualization. Key files:
   - `clinical_dashboard.html`: Placeholder HTML.
   - `prepare_dashboard.bat`: Script to preprocess data (calls missing `prepare_dashboard.py`).
+  - **Update**: Now includes `README.md` and `purpose.txt` for documentation.
   - **Note**: This is likely a work-in-progress; no functional integration yet.
+
+- **VS Code Gemini AI extension**
+  - **Commands**:
+    - `gemini.chat`: Opens an input box, sends prompts to the Gemini API, and displays responses in the output channel.
+    - `gemini.code`: Inserts generated code directly into the active editor, stripping markdown formatting.
+  - **Configuration**: Requires `geminiPair.apiKey` and `geminiPair.model` settings in VS Code.
+  - **Debugging**: Uses a new `launch.json` configuration for extension development.
 
 ## Refactors & Structural Changes
 
@@ -101,6 +117,11 @@ You missed a major shift: the repo now has **three new foundational systems**—
   - `pymongo`, `qdrant-client==1.8.2`: Database clients.
   - `sentence-transformers`, `pypdf`: For embeddings and PDF parsing.
   - `torch==2.2.2` (CPU-only): Required by `sentence-transformers`.
+
+- **VS Code extension dependencies**
+  - Requires Node.js for the extension runtime.
+  - Uses the `https` module for API calls to the Gemini service.
+  - Relies on VS Code settings (`geminiPair.apiKey`, `geminiPair.model`) for configuration.
 
 - **Implicit: Backend CORS updates needed**
   The frontend will call backend APIs from a different origin (even in Docker). Verify that:
