@@ -1,0 +1,305 @@
+.problem-card {
+  background-color: var(--background-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.problem-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.problem-header {
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.problem-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  gap: var(--spacing-md);
+}
+
+.problem-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.difficulty {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.difficulty-easy {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.difficulty-medium {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #e67e22;
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.difficulty-hard {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--danger-color);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.problem-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.problem-topic {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+  flex: 1;
+}
+
+.expand-icon {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  transition: transform 0.2s ease-in-out;
+}
+
+.problem-content {
+  padding: var(--spacing-lg);
+}
+
+.problem-description {
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.content-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background-color: var(--surface-color);
+}
+
+.tab.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+/* Algorithm Section */
+.algorithm-section {
+  margin-top: var(--spacing-md);
+}
+
+.algorithm-approach {
+  margin-bottom: var(--spacing-lg);
+}
+
+.algorithm-approach h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.complexity-info {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.complexity {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--surface-color);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.algorithm-steps h5 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.algorithm-steps ol {
+  padding-left: var(--spacing-lg);
+}
+
+.algorithm-steps li {
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+/* Code Section */
+.code-section {
+  margin-top: var(--spacing-md);
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: #2d2d30;
+  color: white;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-size: var(--font-size-sm);
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.language-tag {
+  background-color: var(--secondary-color);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  color: var(--primary-color);
+}
+
+.code-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.copy-btn {
+  background: none;
+  border: 1px solid #3c3c3c;
+  color: #cccccc;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+  background-color: #3c3c3c;
+  border-color: #007acc;
+  color: #ffffff;
+}
+
+/* Examples Section */
+.examples-section {
+  margin-top: var(--spacing-md);
+}
+
+.example {
+  background-color: var(--surface-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-lg);
+}
+
+.example-input,
+.example-output,
+.example-explanation {
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.5;
+}
+
+.example-input strong,
+.example-output strong,
+.example-explanation strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .problem-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .problem-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .problem-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .content-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .complexity-info {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .code-block {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .problem-card {
+    margin: 0 -var(--spacing-xs);
+  }
+  
+  .problem-header,
+  .problem-content {
+    padding: var(--spacing-md);
+  }
+  
+  .problem-title {
+    font-size: var(--font-size-base);
+  }
+  
+  .tab {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+  
+  .example {
+    padding: var(--spacing-md);
+  }
+}

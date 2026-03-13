@@ -1,0 +1,159 @@
+/* VS Code-like syntax highlighting */
+.syntax-highlighter {
+  background-color: #1e1e1e;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: var(--shadow-lg);
+}
+
+.highlighted-code {
+  padding: 0;
+  margin: 0;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  overflow-x: auto;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.code-line {
+  display: flex;
+  min-height: 21px;
+  padding: 0;
+  margin: 0;
+}
+
+.code-line:hover {
+  background-color: #2a2d2e;
+}
+
+.line-number {
+  background-color: #1e1e1e;
+  color: #858585;
+  padding: 0 16px 0 16px;
+  text-align: right;
+  user-select: none;
+  min-width: 40px;
+  border-right: 1px solid #3c3c3c;
+  font-size: 13px;
+  line-height: 21px;
+  flex-shrink: 0;
+}
+
+.line-content {
+  padding: 0 16px;
+  flex: 1;
+  white-space: pre;
+  line-height: 21px;
+}
+
+/* C++ Syntax Colors (VS Code Dark Theme) */
+.keyword {
+  color: #569cd6; /* Blue for keywords */
+  font-weight: normal;
+}
+
+.type {
+  color: #4ec9b0; /* Teal for types */
+  font-weight: normal;
+}
+
+.string {
+  color: #ce9178; /* Orange for strings */
+}
+
+
+/* C++ comments: always green, italic */
+.cpp-comment {
+  color: #6a9955;
+  font-style: italic;
+}
+
+.number {
+  color: #b5cea8; /* Light green for numbers */
+}
+
+.function {
+  color: #dcdcaa; /* Yellow for functions */
+}
+
+.variable {
+  color: #9cdcfe; /* Light blue for variables */
+}
+
+.preprocessor {
+  color: #c586c0; /* Purple for preprocessor directives */
+}
+
+.operator {
+  color: #d4d4d4; /* Default color for operators */
+}
+
+/* Custom scrollbar for code blocks */
+.highlighted-code::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.highlighted-code::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.highlighted-code::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 6px;
+}
+
+.highlighted-code::-webkit-scrollbar-thumb:hover {
+  background: #4f4f4f;
+}
+
+.highlighted-code::-webkit-scrollbar-corner {
+  background: #1e1e1e;
+}
+
+/* Firefox scrollbar */
+.highlighted-code {
+  scrollbar-width: thin;
+  scrollbar-color: #424242 #1e1e1e;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .syntax-highlighter {
+    font-size: 13px;
+  }
+  
+  .line-number {
+    padding: 0 12px 0 12px;
+    min-width: 35px;
+    font-size: 12px;
+  }
+  
+  .line-content {
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .syntax-highlighter {
+    font-size: 12px;
+  }
+  
+  .line-number {
+    padding: 0 8px 0 8px;
+    min-width: 30px;
+    font-size: 11px;
+  }
+  
+  .line-content {
+    padding: 0 8px;
+  }
+  
+  .highlighted-code {
+    max-height: 400px;
+  }
+}
