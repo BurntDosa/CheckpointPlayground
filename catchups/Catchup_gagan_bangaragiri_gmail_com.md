@@ -40,7 +40,11 @@ You were gone for less than a day, but two major new components were introduced:
   - Environment specs (Ubuntu 18.04, Python 3.7.16/3.8.20, PyTorch 1.7.1/2.4.1).
   - Quick-start guides for SplitLoRA (fine-tuning) and SplitInfer (inference).
   - Hyperparameter tables and code snippets for immediate use.
+<<<<<<< HEAD
 >>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+=======
+  - **Update:** Supported models now include DeepSeek-R1, Qwen2-VL, Llama3, and GPT-2.
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
 
 ## Refactors & Structural Changes
 
@@ -50,6 +54,13 @@ You were gone for less than a day, but two major new components were introduced:
 
 - **PyTorch model file handling**
   `.gitignore` now excludes `*.pth` and `*.pt` files, along with Python cache (`__pycache__`).
+  **Update:** `.DS_Store` (macOS metadata) is also now ignored.
+
+- **SplitFM source files (documented but not yet committed)**
+  The `README.md` references three new files:
+  - `infer_modelsplit.py`: Demo script for split inference.
+  - `modelsplit.py`: Split model definitions (modified from Hugging Face `transformers`).
+  - `utils.py`: Helper functions for parameter loading/counting.
 
 ## New Dependencies & Config Changes
 

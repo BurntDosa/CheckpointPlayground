@@ -1,10 +1,14 @@
 # Master Context
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 This codebase implements a split-model inference system for large language models (LLMs), enabling distributed execution across client and server boundaries. The core idea is to partition models like GPT-2, Llama, and Qwen2VL into client-side and server-side components, reducing client-side compute requirements while maintaining functionality. The system includes a PDF reader for document ingestion, a semantic search backend (Qdrant/MongoDB), and a newly added React frontend for user interaction. The split-model architecture targets edge devices (e.g., laptops, mobile) where full model hosting is infeasible, with use cases like local-first AI assistants or privacy-preserving inference.
 =======
 SplitFM is a framework for **privacy-preserving, resource-efficient fine-tuning and inference** of large foundation models (e.g., GPT-2, Llama3, Qwen2-VL) on edge devices. The system splits models into client/server partitions, enabling low-memory fine-tuning via **SplitLoRA** (parameter-efficient adapters) and split execution via **SplitInfer** (distributed inference). This allows edge devices to run parts of the model locally while offloading heavier layers to a server, reducing latency and bandwidth compared to full cloud inference. The frontend (React + Nginx) provides a UI for model interaction, while the backend (PyTorch) handles training/inference. The project targets use cases like on-device LLMs, federated learning, and secure model serving.
 >>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+=======
+SplitFM is a framework for privacy-preserving, resource-efficient fine-tuning and inference of large foundation models (e.g., GPT-2, Llama3, Qwen2-VL) on edge devices. The core idea is to split models between client (edge) and server (cloud) components, enabling fine-tuning via **SplitLoRA** (Low-Rank Adaptation) and inference via **SplitInfer**. This reduces local compute requirements while maintaining data privacy—sensitive data never leaves the edge device. The system targets use cases like on-device LLMs for healthcare, finance, or IoT, where data cannot be centralized. SplitFM provides PyTorch-based implementations for model splitting, LoRA integration, and distributed training/inference workflows, alongside a React frontend for interaction.
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
 
 ---
 
@@ -52,21 +56,28 @@ graph TD
 - **Frontend**: Static React app (built to `dist/`) served by Nginx. Communicates with backend via REST/gRPC.
 =======
 ### High-Level Components
-1. **SplitLoRA**: Parameter-efficient fine-tuning via LoRA (Low-Rank Adapters) for client-side layers.
-2. **SplitInfer**: Runtime for executing split models across client/server boundaries.
-3. **Frontend**: React UI for model interaction, served via Nginx.
-4. **Backend**: PyTorch-based model definitions, training loops, and inference scripts.
+1. **SplitLoRA**: Parameter-efficient fine-tuning layer that replaces standard `nn.Linear`/`nn.Embedding` with LoRA counterparts (e.g., `loralib.Linear`). Training scripts (e.g., `gpt2_ft_sfl.py`) handle split data paths (`--train_data0`, `--train_data1`) for distributed training.
+2. **SplitInfer**: Splits models into client/server portions (e.g., `GPT2ModelClient`/`GPT2ModelServer`). Inference scripts (e.g., `infer_splitmodel.py`) coordinate between edge and cloud via network calls.
+3. **Frontend**: React 18.3.1 app (built via Docker) serving as a GUI for model interaction. Communicates with backend via REST/WS.
+4. **Utils/Shared**: Helper functions for parameter loading (`utils.py`), model splitting (`modelsplit.py`), and training utilities (`data_utils.py`, `exp_utils.py`).
 
 ### Key Data Flows
-1. **Fine-Tuning**:
-   - Client-side layers (e.g., embeddings, early transformer blocks) are fine-tuned locally using LoRA.
-   - Gradients/activations are synced with the server for full-model updates.
-2. **Inference**:
-   - Input tokens are processed on the client up to a split point.
-   - Intermediate activations are sent to the server for processing by later layers.
-   - Final outputs are returned to the client.
+1. **Fine-Tuning Workflow**:
+   - Input data is split between edge (`--train_data0`) and cloud (`--train_data1`).
+   - LoRA layers are trained locally (edge) or remotely (cloud) using `AdamW` with custom LR schedulers (`CosineAnnealingWarmupRestarts`).
+   - Checkpoints are saved/loaded via `lora.lora_state_dict(model)`.
 
-### Dependency Graph
+2. **Inference Workflow**:
+   - Edge device runs `GPT2ModelClient` (e.g., first *N* transformer layers).
+   - Intermediate activations are sent to cloud for `GPT2ModelServer` processing.
+   - Results are returned to edge for final output (e.g., beam search decoding in `gpt2_beam.py`).
+
+3. **Frontend-Backend Interaction**:
+   - React app (port 80) sends requests to backend Python services (e.g., `gpt_server.py`).
+   - Backend handles model splitting, forwards requests to cloud components, and returns results.
+
+### Mermaid Diagrams
+#### Dependency Graph
 ```mermaid
 graph TD
     __init__ --> layers
@@ -102,7 +113,7 @@ graph TD
     utils --> layers
 ```
 
-### Class Hierarchy
+#### Class Hierarchy
 ```mermaid
 classDiagram
     ConvLoRA <|-- Conv1d
@@ -154,6 +165,7 @@ classDiagram
     object <|-- LMOrderedIterator
 ```
 
+<<<<<<< HEAD
 ### Key Files
 - **SplitLoRA**:
   - `gpt2_ft_sfl.py`: Fine-tuning script with LoRA flags (e.g., `--lora_dim=4`).
@@ -166,10 +178,13 @@ classDiagram
   - `Dockerfile`: Multi-stage build for React + Nginx.
 >>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
 
+=======
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
 ---
 
 ## Key Decision Log
 
+<<<<<<< HEAD
 1. **Split Model Architecture**
 <<<<<<< HEAD
    Models are partitioned at the `Block`/`Layer` level (e.g., `GPT2Model_Client` handles early layers, `GPT2Model_Server` handles later layers). This avoids sending raw weights over the network by delegating compute to the server.
@@ -193,23 +208,34 @@ classDiagram
 =======
    - Models are partitioned into client/server components (e.g., `GPT2ModelClient`/`GPT2ModelServer`).
    - **Rationale**: Enables edge devices to run early layers locally while offloading compute-heavy layers to a server. Reduces bandwidth by sending activations instead of full model weights.
+=======
+1. **SplitLoRA for Parameter Efficiency**
+   - Replaced `nn.Linear`/`nn.Embedding` with `LoRALayer` (e.g., `loralib.Linear`) to reduce trainable parameters.
+   - **Rationale**: Enables fine-tuning on edge devices with limited memory. LoRA freezes pre-trained weights and injects low-rank matrices, cutting VRAM usage by ~75% for GPT-2 Medium.
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
 
-2. **LoRA for Fine-Tuning**
-   - Uses Low-Rank Adapters (LoRA) for client-side fine-tuning instead of full-weight updates.
-   - **Rationale**: Reduces memory/bandwidth for on-device training by freezing pre-trained weights and only updating small adapter matrices.
+2. **Client-Server Model Splitting**
+   - Models are split into `*Client`/`*Server` classes (e.g., `GPT2ModelClient`/`GPT2ModelServer`).
+   - **Rationale**: Distributes compute load and keeps sensitive data on-device. For example, the first 12 transformer layers run on-edge, while the last 12 run in the cloud.
 
-3. **React + Nginx Frontend**
-   - Frontend is a static React app served via Nginx in a Docker container.
+3. **React Frontend with Dockerized Nginx**
+   - Frontend uses React 18.3.1 served via a multi-stage Dockerfile (Node builder → Nginx runtime).
    - **Rationale not documented**.
 
-4. **PyTorch Version Split**
-   - SplitLoRA uses PyTorch 1.7.1, while SplitInfer requires PyTorch 2.4.1.
+4. **PyTorch Version Duality**
+   - SplitLoRA uses PyTorch 1.7.1+cu110; SplitInfer requires 2.4.1.
    - **Rationale not documented**.
 
+<<<<<<< HEAD
 5. **Multi-Stage Docker Build**
    - Frontend Dockerfile uses a `builder` stage for `npm run build` and a separate `nginx` stage for serving.
    - **Rationale**: Minimizes final image size by discarding build dependencies.
 >>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+=======
+5. **Custom LR Schedulers**
+   - Added `CosineAnnealingWarmupRestarts` and `CyclicScheduler` for fine-tuning.
+   - **Rationale**: Mitigates instability in distributed training by adapting learning rates to split data paths.
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
 
 ---
 
@@ -241,30 +267,35 @@ classDiagram
    *(Source: Dependency graph shows `main --> pdf_loader` with no error-handling utilities listed)*
 =======
 1. **PyTorch Version Conflicts** (Checkpoint-Exalt_07.md)
-   - SplitLoRA was tested on PyTorch 1.7.1, while SplitInfer requires 2.4.1. Mixed usage may cause errors.
-   - **Workaround**: Use separate virtual environments for LoRA/SplitInfer workflows.
+   - SplitLoRA (1.7.1) and SplitInfer (2.4.1) have incompatible PyTorch dependencies. Mixed usage may break CUDA kernels or autograd.
 
-2. **Undocumented Split Points** (Checkpoint-Exalt_07.md)
-   - The README does not specify how to choose split layers (e.g., after which transformer block to partition).
-   - **Impact**: Users must manually experiment with split configurations.
+2. **Undocumented Network Protocol** (Checkpoint-Exalt_07.md)
+   - The README does not specify how `GPT2ModelClient` communicates with `GPT2ModelServer` (e.g., gRPC/HTTP, serialization format). Infer from `network.py` or risk protocol mismatches.
 
-3. **Frontend-Backend Integration** (Checkpoint-Karan_Bihani.md)
-   - The frontend commit adds a React app but does not include API endpoints or CORS configuration.
-   - **Impact**: Frontend may fail to connect to backend services without additional setup.
+3. **Frontend-Backend CORS** (Checkpoint-Karan_Bihani.md)
+   - The React app (port 80) will need CORS headers from backend services. No Nginx config or backend CORS setup is documented.
 
 4. **Hardcoded Model Paths** (Checkpoint-Exalt_07.md)
-   - Scripts like `demo_infer_splitmodel.py` assume models are downloaded to specific paths (e.g., `~/model_weights/`).
-   - **Impact**: Scripts will fail if paths are not manually created.
+   - Scripts like `infer_splitmodel.py` assume models (e.g., Qwen2-VL) are downloaded to fixed paths (e.g., `~/model_zoo/`). Missing files cause runtime errors.
 
+<<<<<<< HEAD
 5. **Missing Nginx Config** (Checkpoint-Karan_Bihani.md)
    - The Dockerfile references `nginx.conf` (for SPA routing), but the file is not included in the commit.
    - **Impact**: Frontend routing (e.g., deep links) may break.
 >>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+=======
+5. **Missing Subproject Context** (Checkpoint-Zwarup.md)
+   - Commit `5da7a2ecce4e20501f53adf5797ac70a2be3a0f4` is referenced but undocumented. Builds may fail if subproject APIs changed.
+
+6. **macOS Metadata Leak** (Checkpoint-Zwarup.md)
+   - `.DS_Store` files are accidentally committed. May cause permission errors in Linux Docker builds.
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
 
 ---
 
 ## Dependency Map
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 ### External Services
 1. **Qdrant**
@@ -307,6 +338,19 @@ classDiagram
 | **ModelScope**           | Hosts pre-trained models (e.g., Qwen2-VL).                           | (API)         |
 | **CUDA**                 | GPU acceleration for PyTorch.                                       | 11.0+         |
 >>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+=======
+| Dependency          | Version       | Role                                                                 |
+|---------------------|---------------|----------------------------------------------------------------------|
+| PyTorch             | 1.7.1/2.4.1   | Core tensor operations. Version split causes conflicts.              |
+| loralib             | (source)      | LoRA layer implementations (`Linear`, `Embedding`).                 |
+| React               | 18.3.1        | Frontend UI framework.                                               |
+| Node.js             | 20 (Docker)   | Frontend build toolchain.                                            |
+| Nginx               | 1.25-alpine   | Serves static React files.                                           |
+| Hugging Face        | `transformers`| Base model architectures (e.g., `GPT2PreTrainedModel`).             |
+| ModelScope          | (latest)      | Hosts Qwen2-VL and other pretrained models.                          |
+| AdamW               | (PyTorch)     | Optimizer for fine-tuning.                                           |
+| CUDA                | 11.0/12.1     | GPU acceleration. Version must match PyTorch.                       |
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
 
 ---
 
@@ -379,77 +423,76 @@ classDiagram
 =======
 1. **Backend**:
    - Ubuntu 18.04+ (tested) or WSL2.
-   - Python 3.7.16 (for SplitLoRA) or 3.8.20 (for SplitInfer).
-   - CUDA 11.0+ and compatible GPU drivers.
-   - [Verify] PyTorch: Install via `pip install torch==1.7.1+cu110` (LoRA) or `torch==2.4.1` (SplitInfer).
+   - Python 3.7.16 (SplitLoRA) **or** 3.8.20 (SplitInfer).
+   - CUDA 11.0 (for PyTorch 1.7.1) or 12.1 (for 2.4.1).
+   - Install PyTorch:
+     ```bash
+     # For SplitLoRA:
+     pip install torch==1.7.1+cu110 -f https://download.pytorch.org/whl/torch_stable.html
+     # For SplitInfer:
+     pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cu121
+     ```
 
 2. **Frontend**:
    - Docker Desktop or `docker-compose`.
-   - Node.js 20+ (for local dev, optional if using Docker).
+   - Node.js 20+ (optional for local dev).
 
-### Setup
+### Setup Steps
 1. **Clone the repo**:
    ```bash
-   git clone <repo-url> SplitFM
-   cd SplitFM
+   git clone --recurse-submodules https://github.com/fdu-inc/SplitFM.git
+   cd SplitFM/SplitFM-main
    ```
 
-2. **Backend Setup**:
+2. **Install LoRA dependencies**:
    ```bash
-   # For SplitLoRA
-   pip install -r requirements.txt  # [Verify] Check for a requirements.txt
    pip install loralib
-
-   # For SplitInfer
-   pip install torch==2.4.1 transformers
+   # Or from source:
+   git clone https://github.com/microsoft/LoRA.git
+   cd LoRA && pip install -e .
    ```
 
-3. **Download Models**:
+3. **Download a model** (e.g., Qwen2-VL):
    ```bash
-   mkdir -p ~/model_weights/
-   # Example: Download Qwen2-VL via ModelScope (see README)
+   mkdir -p ~/model_zoo
+   git lfs install
+   git clone https://www.modelscope.cn/qwen/Qwen2-VL-7B-Instruct.git ~/model_zoo/qwen2-vl
    ```
 
-4. **Frontend Setup**:
+4. **Build the frontend**:
    ```bash
-   cd frontend
-   npm install
-   npm run build
+   cd ../frontend
    docker build -t splitfm-frontend .
-   ```
-
-### Run SplitInfer Demo
-1. Start the server:
-   ```bash
-   python SplitFM-main/SplitInfer/gpt_server.py --model_path ~/model_weights/gpt2-medium
-   ```
-2. In another terminal, run the client:
-   ```bash
-   python SplitFM-main/SplitInfer/gpt_client_gui.py --server_ip 127.0.0.1
-   ```
-3. Open the frontend:
-   ```bash
    docker run -p 80:80 splitfm-frontend
    ```
-   Navigate to `http://localhost` in your browser.
 
-### Run SplitLoRA Fine-Tuning
-1. Prepare data (e.g., in `SplitFM-main/data/`).
-2. Launch training:
+5. **[Verify] Run a demo inference**:
+   - Open `http://localhost` in your browser.
+   - Select "Qwen2-VL" and a local image. The frontend should:
+     1. Send the image to the backend (`gpt_server.py`).
+     2. Trigger split inference between `Qwen2VLModel_Client` (edge) and `Qwen2VLModel_Server` (cloud).
+     3. Display the result (e.g., image caption).
+
+6. **[Verify] Fine-tune GPT-2**:
    ```bash
-   python SplitFM-main/SplitLoRA/gpt2_ft_sfl.py \
+   cd ../SplitFM-main
+   python gpt2_ft_sfl.py \
+     --train_data0 data/edge_train.bin \
+     --train_data1 data/cloud_train.bin \
      --lora_dim 4 \
-     --train_data0 data/part1.bin \
-     --train_data1 data/part2.bin
+     --train_batch_size 8
    ```
+   - Expect LoRA checkpoints in `./checkpoints/`.
 
-### [Verify] Debugging Tips
-- If PyTorch crashes, check CUDA compatibility with `nvidia-smi`.
-- Frontend 404s? Ensure `nginx.conf` includes:
-  ```nginx
-  location / {
-    try_files $uri $uri/ /index.html;
-  }
+### Debugging Tips
+- **CUDA Errors**: Ensure `nvidia-smi` shows GPU compatibility with your PyTorch version.
+- **Frontend 404s**: Check Nginx logs in the Docker container:
+  ```bash
+  docker logs <container_id> --tail 50
   ```
+<<<<<<< HEAD
 - Model loading errors? Verify paths in `modelsplit.py` match your downloaded weights.
 >>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+=======
+- **Model Not Found**: Verify paths in `infer_splitmodel.py` match your `~/model_zoo/` structure.
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
