@@ -1,0 +1,15 @@
+{
+  "name": "gemini-pair",
+  "displayName": "Gemini Pair",
+  "version": "0.0.1",
+  "publisher": "me",
+  "engines": { "vscode": "^1.51.0" },
+  "activationEvents": [ "onCommand:gemini.chat", "onCommand:gemini.code" ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "gemini.chat", "title": "Gemini: Chat (Output Panel)" },
+      { "command": "gemini.code", "title": "Gemini: Write Code Here" }
+    ]
+  }
+}
