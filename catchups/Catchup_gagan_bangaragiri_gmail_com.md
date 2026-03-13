@@ -1,6 +1,14 @@
 # While You Were Gone — Since 2026-03-13 20:08:26+05:30
 
+<<<<<<< HEAD
 You were gone for less than a day, but two major new components were introduced: a React 18.3.1 frontend layer and the **SplitFM** framework for privacy-preserving, resource-efficient fine-tuning and inference. The codebase now includes a Dockerized Nginx deployment for the frontend and a new `.gitignore` setup for PyTorch model files. Expect backend API adjustments for CORS, new CI/CD requirements for frontend builds, and potential dependency conflicts between SplitLoRA (PyTorch 1.7.1) and SplitInfer (PyTorch 2.4.1).
+=======
+<<<<<<< HEAD
+You were gone for less than a day, but a major new frontend layer was introduced and fully implemented. The codebase now includes a React 18.3.1 setup with a Dockerized Nginx deployment, minified production builds, and a multi-stage build pipeline. This is a foundational shift—expect backend API adjustments for CORS, new CI/CD requirements for frontend builds, and local development environment updates.
+=======
+You were gone for less than a day, but two major new components were introduced: a React 18.3.1 frontend layer and the **SplitFM** framework for privacy-preserving, resource-efficient fine-tuning and inference. The codebase now includes a Dockerized Nginx deployment for the frontend and a new `.gitignore` setup for PyTorch model files. Expect backend API adjustments for CORS, new CI/CD requirements for frontend builds, and potential dependency conflicts between SplitLoRA (PyTorch 1.7.1) and SplitInfer (PyTorch 2.4.1).
+>>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+>>>>>>> add-pdf-reader-llm
 
 ## Critical Changes (Must-Read)
 
@@ -27,12 +35,27 @@ You were gone for less than a day, but two major new components were introduced:
 - **Frontend UI layer**
   React hooks (`useState`, `useEffect`) and JSX transforms are now available. The app is production-optimized (minified builds).
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+- **React 18.3.1 core features**
+  Concurrent rendering, hooks, and JSX runtime transforms are now supported.
+=======
+>>>>>>> add-pdf-reader-llm
 - **SplitFM documentation**
   The `README.md` now includes:
   - Environment specs (Ubuntu 18.04, Python 3.7.16/3.8.20, PyTorch 1.7.1/2.4.1).
   - Quick-start guides for SplitLoRA (fine-tuning) and SplitInfer (inference).
   - Hyperparameter tables and code snippets for immediate use.
+<<<<<<< HEAD
   - **Update:** Supported models now include DeepSeek-R1, Qwen2-VL, Llama3, and GPT-2.
+=======
+<<<<<<< HEAD
+>>>>>>> 67bcc05 (docs: update catchups for 33bcf89e50bc2cb32d87a071c924e636ab88199c)
+=======
+  - **Update:** Supported models now include DeepSeek-R1, Qwen2-VL, Llama3, and GPT-2.
+>>>>>>> 233974a (docs: update catchups for 211ac130c4f8ed0828e263955651e5057fc669fa)
+>>>>>>> add-pdf-reader-llm
 
 ## Refactors & Structural Changes
 
